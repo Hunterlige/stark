@@ -6,8 +6,6 @@ from collections import Counter
 
 
 import codecs
-import re
-import codecs
 
 
 def compact_text(text):
@@ -20,34 +18,36 @@ def compact_text(text):
 
 def remove_punctuation(text):
     for punctuation in string.punctuation:
-        text = text.replace(punctuation, '')
+        text = text.replace(punctuation, "")
     return text
 
 
 def clean_data(item):
-    '''
+    """
     clean the text data
     Args:
         item (Union[str, list, dict]): An object that contains text data which is cleaned iteratively
-    Return: 
+    Return:
         the cleaned data in the same format as item
-    '''
+    """
     if isinstance(item, str):
-        item = ' '.join(BeautifulSoup(item, "lxml").text.split())
+        item = " ".join(BeautifulSoup(item, "lxml").text.split())
     elif isinstance(item, list):
         item = [clean_data(i) for i in item]
     elif isinstance(item, dict):
-        item = {remove_punctuation(clean_data(k).lower()).replace(' ', '_'): clean_data(i) for k, i in item.items()}
+        item = {
+            remove_punctuation(clean_data(k).lower()).replace(" ", "_"): clean_data(i)
+            for k, i in item.items()
+        }
     return item
 
 
 def chunk_text(text, chunk_size):
-
     custom_text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = chunk_size,
-        chunk_overlap  = chunk_size // 5,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_size // 5,
         # Use length of the text as the size measure
-        length_function = len
+        length_function=len,
     )
 
     # Create the chunks
@@ -56,12 +56,12 @@ def chunk_text(text, chunk_size):
     return chunks
 
 
-def clean_dict(dictionary: dict, remove_values=['', 'nan']) -> dict:
-    '''
+def clean_dict(dictionary: dict, remove_values=["", "nan"]) -> dict:
+    """
     Clean the dictionary by removing specific values
     Args:
         dictionary (dict): a dictionary
-    '''
+    """
     new_dict = {}
     for k, v in dictionary.items():
         if isinstance(v, dict):
@@ -75,15 +75,16 @@ def clean_dict(dictionary: dict, remove_values=['', 'nan']) -> dict:
 
 def normalize_answer(s):
     """Lower text and remove punctuation, articles and extra whitespace."""
+
     def remove_articles(text):
-        return re.sub(r'\b(a|an|the)\b', ' ', text)
+        return re.sub(r"\b(a|an|the)\b", " ", text)
 
     def white_space_fix(text):
-        return ' '.join(text.split())
+        return " ".join(text.split())
 
     def remove_punc(text):
         exclude = set(string.punctuation)
-        return ''.join(ch for ch in text if ch not in exclude)
+        return "".join(ch for ch in text if ch not in exclude)
 
     def lower(text):
         return text.lower()
@@ -121,48 +122,48 @@ def exact_match_score(prediction, ground_truth):
 
 # from https://code.activestate.com/recipes/577781-pluralize-word-convert-singular-word-to-its-plural/
 ABERRANT_PLURAL_MAP = {
-    'appendix': 'appendices',
-    'barracks': 'barracks',
-    'cactus': 'cacti',
-    'child': 'children',
-    'criterion': 'criteria',
-    'deer': 'deer',
-    'echo': 'echoes',
-    'elf': 'elves',
-    'embargo': 'embargoes',
-    'focus': 'foci',
-    'fungus': 'fungi',
-    'goose': 'geese',
-    'hero': 'heroes',
-    'hoof': 'hooves',
-    'index': 'indices',
-    'knife': 'knives',
-    'leaf': 'leaves',
-    'life': 'lives',
-    'man': 'men',
-    'mouse': 'mice',
-    'nucleus': 'nuclei',
-    'person': 'people',
-    'phenomenon': 'phenomena',
-    'potato': 'potatoes',
-    'self': 'selves',
-    'syllabus': 'syllabi',
-    'tomato': 'tomatoes',
-    'torpedo': 'torpedoes',
-    'veto': 'vetoes',
-    'woman': 'women',
-    }
+    "appendix": "appendices",
+    "barracks": "barracks",
+    "cactus": "cacti",
+    "child": "children",
+    "criterion": "criteria",
+    "deer": "deer",
+    "echo": "echoes",
+    "elf": "elves",
+    "embargo": "embargoes",
+    "focus": "foci",
+    "fungus": "fungi",
+    "goose": "geese",
+    "hero": "heroes",
+    "hoof": "hooves",
+    "index": "indices",
+    "knife": "knives",
+    "leaf": "leaves",
+    "life": "lives",
+    "man": "men",
+    "mouse": "mice",
+    "nucleus": "nuclei",
+    "person": "people",
+    "phenomenon": "phenomena",
+    "potato": "potatoes",
+    "self": "selves",
+    "syllabus": "syllabi",
+    "tomato": "tomatoes",
+    "torpedo": "torpedoes",
+    "veto": "vetoes",
+    "woman": "women",
+}
 
-VOWELS = set('aeiou')
+VOWELS = set("aeiou")
 
-import nltk
 from nltk.corpus import wordnet
+
 
 def synonym_extractor(phrase):
     synonyms = []
 
     for syn in wordnet.synsets(phrase):
-        if '.n.' in syn.name():
+        if ".n." in syn.name():
             for l in syn.lemmas():
                 synonyms.append(l.name())
     return list(set(synonyms))
@@ -171,7 +172,7 @@ def synonym_extractor(phrase):
 def pluralize(singular):
     """Return plural form of given lowercase singular word (English only). Based on
     ActiveState recipe http://code.activestate.com/recipes/413172/
-    
+
     >>> pluralize('')
     ''
     >>> pluralize('goose')
@@ -199,53 +200,76 @@ def pluralize(singular):
 
     """
     if not singular:
-        return ''
+        return ""
     plural = ABERRANT_PLURAL_MAP.get(singular)
     if plural:
         return plural
     root = singular
     try:
-        if singular[-1] == 'y' and singular[-2] not in VOWELS:
+        if singular[-1] == "y" and singular[-2] not in VOWELS:
             root = singular[:-1]
-            suffix = 'ies'
-        elif singular[-1] == 's':
+            suffix = "ies"
+        elif singular[-1] == "s":
             if singular[-2] in VOWELS:
-                if singular[-3:] == 'ius':
+                if singular[-3:] == "ius":
                     root = singular[:-2]
-                    suffix = 'i'
+                    suffix = "i"
                 else:
                     root = singular[:-1]
-                    suffix = 'ses'
+                    suffix = "ses"
             else:
-                suffix = 'es'
-        elif singular[-2:] in ('ch', 'sh'):
-            suffix = 'es'
+                suffix = "es"
+        elif singular[-2:] in ("ch", "sh"):
+            suffix = "es"
         else:
-            suffix = 's'
+            suffix = "s"
     except IndexError:
-        suffix = 's'
+        suffix = "s"
     plural = root + suffix
     return plural
 
 
 def decode_escapes(s):
-    ESCAPE_SEQUENCE_RE = re.compile(r'''
+    ESCAPE_SEQUENCE_RE = re.compile(
+        r"""
         ( \\U........      # 8-digit hex escapes
         | \\u....          # 4-digit hex escapes
         | \\x..            # 2-digit hex escapes
         | \\[0-7]{1,3}     # Octal escapes
         | \\N\{[^}]+\}     # Unicode characters by name
         | \\[\\'"abfnrtv]  # Single-character escapes
-        )''', re.UNICODE | re.VERBOSE)
+        )""",
+        re.UNICODE | re.VERBOSE,
+    )
+
     def decode_match(match):
-        return codecs.decode(match.group(0), 'unicode-escape')
+        return codecs.decode(match.group(0), "unicode-escape")
 
     return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
 
 
-if __name__ == '__main__':
-    print(chunk_text("Based on the given product information, you need to (1) identify the product's generic category, (2) list all of the negative perspectives and their sources, and (2) extract up to five hard and five soft requirements relevant to customers' interests along with their sources. (1) For example, the product's generic category can be ", 100))
+if __name__ == "__main__":
+    print(
+        chunk_text(
+            "Based on the given product information, you need to (1) identify the product's generic category, (2) list all of the negative perspectives and their sources, and (2) extract up to five hard and five soft requirements relevant to customers' interests along with their sources. (1) For example, the product's generic category can be ",
+            100,
+        )
+    )
     print(normalize_answer("Sparkling White Smiles Professional Sport Mouth Guards"))
     print(normalize_answer("I also got a 2-pack <Sparkling White "))
-    print(f1_score(normalize_answer("Professional Sport Mouth Guards Sparkling White Smiles haha"), normalize_answer("Sparkling White Smiles Professional Sport Mouth Guards")))
-    print(recall_score(normalize_answer("Professional Sport Mouth Guards Sparkling White Smiles haha"), normalize_answer("Sparkling White Smiles Professional Sport Mouth Guards")))
+    print(
+        f1_score(
+            normalize_answer(
+                "Professional Sport Mouth Guards Sparkling White Smiles haha"
+            ),
+            normalize_answer("Sparkling White Smiles Professional Sport Mouth Guards"),
+        )
+    )
+    print(
+        recall_score(
+            normalize_answer(
+                "Professional Sport Mouth Guards Sparkling White Smiles haha"
+            ),
+            normalize_answer("Sparkling White Smiles Professional Sport Mouth Guards"),
+        )
+    )

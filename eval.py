@@ -13,7 +13,9 @@ from src.tools.args import merge_args, load_args
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", default="amazon", choices=['amazon', 'primekg', 'mag'])
+    parser.add_argument(
+        "--dataset", default="amazon", choices=["amazon", "primekg", "mag"]
+    )
     parser.add_argument(
         "--model", default="VSS", choices=["VSS", "MultiVSS", "LLMReranker"]
     )
@@ -31,8 +33,12 @@ def parse_args():
     parser.add_argument("--emb_model", type=str, default="text-embedding-ada-002")
 
     # for llm reranker
-    parser.add_argument("--llm_model", type=str, default="gpt-4-1106-preview",
-                        help='the LLM to rerank candidates.')
+    parser.add_argument(
+        "--llm_model",
+        type=str,
+        default="gpt-4-1106-preview",
+        help="the LLM to rerank candidates.",
+    )
     parser.add_argument("--llm_topk", type=int, default=20)
     parser.add_argument("--max_retry", type=int, default=3)
 
@@ -55,7 +61,7 @@ if __name__ == "__main__":
     args.query_emb_dir = osp.join(args.emb_dir, args.dataset, args.emb_model, "query")
     args.node_emb_dir = osp.join(args.emb_dir, args.dataset, args.emb_model, "doc")
     args.chunk_emb_dir = osp.join(args.emb_dir, args.dataset, args.emb_model, "chunk")
-    surfix = args.llm_model if args.model == 'LLMReranker' else args.emb_model
+    surfix = args.llm_model if args.model == "LLMReranker" else args.emb_model
     output_dir = osp.join(args.output_dir, "eval", args.dataset, args.model, surfix)
 
     os.makedirs(output_dir, exist_ok=True)
